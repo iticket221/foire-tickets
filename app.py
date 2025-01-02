@@ -5,14 +5,18 @@ import os
 
 app = Flask(__name__)
 
-# Assurez-vous que le dossier instance existe
-instance_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance')
-if not os.path.exists(instance_path):
-    os.makedirs(instance_path)
+# Configuration de la base de données
+if os.environ.get('RENDER'):
+    # Configuration pour Render.com
+    app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///tickets.db')
+else:
+    # Configuration locale
+    instance_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'instance')
+    if not os.path.exists(instance_path):
+        os.makedirs(instance_path)
+    db_path = os.path.join(instance_path, 'tickets.db')
+    app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 
-# Configuration avec chemin absolu
-db_path = os.path.join(instance_path, 'tickets.db')
-app.config['SQLALCHEMY_DATABASE_URI'] = f'sqlite:///{db_path}'
 app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 
 db = SQLAlchemy(app)
@@ -110,12 +114,9 @@ def statistiques():
                          total_ventes=total_ventes,
                          ventes_par_jour=ventes_formatees)
 
-# Initialiser la base de données avant de démarrer l'application
+# Initialiser la base de données
 init_db()
 
 if __name__ == '__main__':
     # En développement
     app.run(host='127.0.0.1', port=8080, debug=True)
-else:
-    # En production
-    init_db()
