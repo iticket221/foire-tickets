@@ -114,6 +114,8 @@ def statistiques():
 init_db()
 
 if __name__ == '__main__':
-    print(f"Base de données : {db_path}")
-    print("Démarrage du serveur sur http://127.0.0.1:8080")
+    # En développement
     app.run(host='127.0.0.1', port=8080, debug=True)
+else:
+    # En production
+    init_db()
